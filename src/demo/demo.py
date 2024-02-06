@@ -151,10 +151,6 @@ class Demo:
 
         return image
 
-
-
-
-
     def _resize_frame(self, frame: np.ndarray) -> np.ndarray:
         h,w,_ = frame.shape
         if self.window_height and self.window_width:
@@ -163,7 +159,7 @@ class Demo:
             fx = self.window_height/h
             frame = cv2.resize(frame, None, fx=fx, fy=fx)
         elif self.window_width:
-            fx = self.window_height/w
+            fx = self.window_width/w
             frame = cv2.resize(frame, None, fx=fx, fy=fx)
         return frame
 
