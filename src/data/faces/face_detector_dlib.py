@@ -6,7 +6,7 @@ import os
 # Inicializar el detector de rostros de dlib
 detector = dlib.get_frontal_face_detector()
 
-base_dir = '/data3fast/users/group02/tracks'
+base_dir = '/data3fast/users/group02/videos/tracks'
 
 # Iterar recursivamente en el directorio base
 for root, dirs, files in os.walk(base_dir):
