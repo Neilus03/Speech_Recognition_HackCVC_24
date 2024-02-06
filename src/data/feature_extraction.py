@@ -16,7 +16,10 @@ def get_all_videos(base_path):
 
 all_videos = get_all_videos(base_dir)
 
+print()
 print(len(all_videos))
+print()
+
 # Iterar recursivamente en el directorio base
 random.shuffle(all_videos)
 
@@ -34,11 +37,13 @@ for root, file in tqdm(all_videos):
         max_height = 0
 
         while cap.isOpened():
-
+            
             ret, frame = cap.read()
 
             if not ret:
                 break
+
+            frames.append(frame)
 
             face_landmarks_list = face_recognition.face_landmarks(frame)
 
@@ -62,7 +67,8 @@ for root, file in tqdm(all_videos):
                 distances_norm = [dis/max_dist for dis in distances]
 
         if not frames:
-            print(f"No se detectaron labios en el video: {video_path}")
+
+            print(f"Not video: {video_path}")
             cap.release()
             continue
 
@@ -76,10 +82,8 @@ for root, file in tqdm(all_videos):
         # Check the size of the array
         print(f"Size of the array: {features_np.shape}")
 
-        """
-        npz_file_path = os.path.join(root, 'frames.npz')
-        np.savez(npz_file_path, face_frames=face_frames_np)
+        npz_file_path = os.path.join(root, 'features.npz')
+        np.savez(npz_file_path, face_frames=features_np)
 
-        print(f"Total de caras recortadas guardadas en {npz_file_path}: {len(resized_face_frames)}")
         cap.release()
-        """
+        
