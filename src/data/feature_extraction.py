@@ -12,7 +12,7 @@ base_dir = "/data3fast/users/group02/videos/tracks/"
 def get_all_videos(base_path):
     return sum([[(root, file) for file in files if file.endswith('.mp4')]
             for root, dirs, files in os.walk(base_path)], start = []
-print(list(os.walk(base_dir)))
+            )
 
 all_videos = get_all_videos(base_dir)
 
