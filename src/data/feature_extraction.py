@@ -5,7 +5,7 @@ import os
 import face_recognition
 import cv2
 
-base_dir = "\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces"
+base_dir = "/data3fast/users/group02/videos/tracks/"
 # base_dir = "/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces"
 
 def get_all_videos(base_path):
