@@ -67,3 +67,4 @@ for root, dirs, files in os.walk(base_dir):
 
             print(f"Total de caras recortadas guardadas en {npz_file_path}: {len(resized_face_frames)}")
             cap.release()
+
