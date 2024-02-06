@@ -14,7 +14,7 @@ def get_all_videos(base_path):
             for root, dirs, files in os.walk(base_path)], start = [])
 
 all_videos = get_all_videos(base_dir)
-
+print("Done")
 # Iterar recursivamente en el directorio base
 random.shuffle(all_videos)
 
