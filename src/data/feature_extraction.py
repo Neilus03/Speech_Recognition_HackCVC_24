@@ -1,13 +1,12 @@
 import random
-
-import cv2
 import dlib
 import numpy as np
 import os
 import face_recognition
 import cv2
 
-base_dir = r'C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces'
+# base_dir = r'C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces'
+base_dir = "/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces"
 
 def get_all_videos(base_path):
     return sum([[(root, file) for file in files if file.endswith('.mp4')]
@@ -44,12 +43,7 @@ for root, file in all_videos:
                 lip_points_inner = face_landmarks_list[0]['top_lip'] + face_landmarks_list[0]['bottom_lip']
 
                 keypoints = lip_points_outer + lip_points_inner
-
-                #for point in keypoints:
-                    #cv2.circle(frame, point, 1, (0, 255, 0), thickness=-1)  # Dibuja un círculo verde para cada keypoint
-                
-                #cv2.imwrite(r'C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces\keypoints_frames.jpg', frame)
-                            
+     
                 # Get the centroid of the lip
                 centroid = (int(np.mean([point[0] for point in keypoints])),
                             int(np.mean([point[1] for point in keypoints])))
@@ -59,9 +53,7 @@ for root, file in all_videos:
 
                 max_dist = distances[47]
 
-                print("dist[0]", distances[0])
                 distances_norm = [dis/max_dist for dis in distances]
-                print("dist_norm[0]", distances_norm[0])
 
             if not ret:
                 break
@@ -72,10 +64,19 @@ for root, file in all_videos:
             continue
 
         # Convertir a array de NumPy y guardar en archivo .npz
-        face_frames_np = np.array(resized_face_frames)
+        keypoints_np = np.array(keypoints)
+        distances_np = np.array(distances_norm)
+
+        # hstack = horizontal stack 
+        features_np = np.hstack((keypoints_np, distances_np))
+
+        # Check the size of the array
+        print(f"Size of the array: {features_np.shape}")
+
+        """
         npz_file_path = os.path.join(root, 'frames.npz')
         np.savez(npz_file_path, face_frames=face_frames_np)
 
         print(f"Total de caras recortadas guardadas en {npz_file_path}: {len(resized_face_frames)}")
         cap.release()
-
+        """
