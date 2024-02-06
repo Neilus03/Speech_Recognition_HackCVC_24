@@ -35,7 +35,7 @@ def process_file(npz_file_path):
             output_npz_file_path = os.path.join(os.path.dirname(npz_file_path), 'lip_keypoints.npz')
             np.savez(output_npz_file_path, lip_keypoints=distances_np)
 
-            print(f"Processed: {output_npz_file_path}")
+            #print(f"Processed: {output_npz_file_path}")
 
             # Increment the count of started processes
             started_processes += 1
@@ -45,9 +45,12 @@ def main():
     npz_paths = []
 
     for root, dirs, files in os.walk(base_dir):
-        for dir in dirs:
-            npz_file_path = os.path.join(root, dir, 'faces.npz')
-            npz_paths.append(npz_file_path)
+        for file in files:
+            if file == 'face_frames.npz':
+                npz_file_path = os.path.join(root, file)
+                # Solo agregar el path si el archivo existe realmente
+                if os.path.exists(npz_file_path):
+                    npz_paths.append(npz_file_path)
 
     # Utilize multiprocessing to process the files
     num_processes = os.cpu_count()
