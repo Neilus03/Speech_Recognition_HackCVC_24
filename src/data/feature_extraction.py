@@ -11,10 +11,12 @@ base_dir = "/data3fast/users/group02/videos/tracks/"
 
 def get_all_videos(base_path):
     return sum([[(root, file) for file in files if file.endswith('.mp4')]
-            for root, dirs, files in os.walk(base_path)], start = [])
+            for root, dirs, files in os.walk(base_path)], start = []
+print(list(os.walk(base_dir)))
 
 all_videos = get_all_videos(base_dir)
-print("Done")
+
+print(len(all_videos))
 # Iterar recursivamente en el directorio base
 random.shuffle(all_videos)
 
@@ -34,6 +36,9 @@ for root, file in tqdm(all_videos):
         while cap.isOpened():
 
             ret, frame = cap.read()
+
+            if not ret:
+                break
 
             face_landmarks_list = face_recognition.face_landmarks(frame)
 
@@ -55,9 +60,6 @@ for root, file in tqdm(all_videos):
                 max_dist = distances[47]
 
                 distances_norm = [dis/max_dist for dis in distances]
-
-            if not ret:
-                break
 
         if not frames:
             print(f"No se detectaron labios en el video: {video_path}")
