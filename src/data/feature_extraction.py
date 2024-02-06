@@ -69,21 +69,21 @@ for root, file in tqdm(all_videos):
 
                     distances_norm = [dis/max_dist for dis in distances]
 
+                    # Convertir a array de NumPy y guardar en archivo .npz
+                    keypoints_np = np.array(keypoints).reshape(2 * 48)
+                    distances_np = np.array(distances_norm).reshape(48)
+
+                    # hstack = horizontal stack 
+                    features_np = np.hstack((keypoints_np, distances_np))
+
+                    npz_file_path = os.path.join(root, 'features.npz')
+                    np.savez(npz_file_path, face_frames=features_np)
+
             if not frames:
 
                 print(f"Not video: {video_path}")
                 cap.release()
                 continue
-
-            # Convertir a array de NumPy y guardar en archivo .npz
-            keypoints_np = np.array(keypoints).reshape(2 * 48)
-            distances_np = np.array(distances_norm).reshape(48)
-
-            # hstack = horizontal stack 
-            features_np = np.hstack((keypoints_np, distances_np))
-
-            npz_file_path = os.path.join(root, 'features.npz')
-            np.savez(npz_file_path, face_frames=features_np)
 
             cap.release()
 
