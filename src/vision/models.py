@@ -28,9 +28,11 @@ class EncoderCNNLSTM(nn.Module):
 
         # Pass the batch through the CNN encoder
         cnn_output = self.ResNet(X)
+        print(cnn_output.size())
 
         # Reshape CNN output to [batch_size, num_frames, features]
         cnn_output = cnn_output.view(batch_size, num_frames, -1)
+        print(cnn_output.size())
 
         # Pass the CNN output through the LSTM
         lstm_output, (h_n, c_n) = self.lstm(cnn_output)
