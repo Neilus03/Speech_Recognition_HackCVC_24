@@ -47,6 +47,8 @@ for root, file in tqdm(all_videos):
 
             face_landmarks_list = face_recognition.face_landmarks(frame)
 
+            print("")
+
             if face_landmarks_list:
 
                 # Extract lip keypoints (outer and inner)
@@ -73,8 +75,11 @@ for root, file in tqdm(all_videos):
             continue
 
         # Convertir a array de NumPy y guardar en archivo .npz
-        keypoints_np = np.array(keypoints)
-        distances_np = np.array(distances_norm)
+        keypoints_np = np.array(keypoints).reshape(2 * 48)
+        distances_np = np.array(distances_norm).reshape(48)
+
+        print(f"Size of the array: {keypoints_np.shape}")
+        print(f"Size of the array: {distances_np.shape}")
 
         # hstack = horizontal stack 
         features_np = np.hstack((keypoints_np, distances_np))
