@@ -1,62 +1,23 @@
-
-import torch
-from pathlib import Path
 import whisper
-from multiprocessing import Pool
+import os
+from tqdm import tqdm
+import random
 
-# Define a list of GPU device IDs to use
-gpu_devices = ['cuda:7', 'cuda:8', 'cuda:9']
-CUDA_VISIBLE_DEVICES = 7,8,9
+model = whisper.load_model("base")
 
-def transcribe_audio(audio_path, transcription_path, device_id="cuda:0", model_size='base'):
-    try:
-        # Set the CUDA device if a specific device ID is provided
-        if device_id is not None:
-            device = torch.device(device_id)
-        else:
-            # Default to CPU if no device ID is provided
-            device = torch.device('cpu')
+#result = model.transcribe("/data3fast/users/group02/videos/The Fear of Success Dr Marty Hauff at TEDxYouth@WISS_trimmed.mp3")
+#print(result["text"])
 
-        # Load the Whisper model and move it to the specified device
-        model = whisper.load_model(model_size).to(device)
+directori = "/data3fast/users/group02/videos/tracks/"
 
-        # Transcribe the audio
-        result = model.transcribe(audio_path)
-
-        # Print the path where the transcription should be saved
-        print(f"Transcription path: {transcription_path}")
-
-        # Save the transcription to a file
-        with open(transcription_path, 'w') as f:
-            f.write(result['text'])
-            
-            print("transcription path:",transcription_path)
-            print(result['text'])
-            exit()
-        return result['text']
-    except Exception as e:
-        return str(e)
+files = list(os.walk(directori))
+random.shuffle(files)
+for carpeta_actual, carpetes, fitxers in tqdm(files):
+    for fitxer in fitxers:
+        ruta_completa = os.path.join(carpeta_actual, fitxer)
+        if ruta_completa.endswith('.mp3'):
+            result = model.transcribe(ruta_completa)
+            with open(os.path.join(carpeta_actual, 'transcription.txt'), 'w') as file:
+                file.write(result["text"])
 
 
-def process_folder(folder):
-    if folder.is_dir():
-        audio_file = next(folder.glob("*.mp3"), None)
-        if audio_file:
-            transcription_path = folder / "transcription.txt"
-            #print(f"Transcribing audio from {audio_file}...")
-
-            # Transcribe audio to text using one of the specified GPUs
-            device_id = "cuda:0" # Choose GPU based on folder depth
-            transcribe_audio(str(audio_file), str(transcription_path), device_id=device_id)
-
-            #print(f"Finished transcribing. Transcription saved to {transcription_path}.")
-        else:
-            #print(f"No MP3 file found in {folder}.")
-
-if __name__ == "__main__":
-    base_directory = Path("/data3fast/users/group02/videos/tracks")
-    
-    # Create a Pool of worker processes
-    with Pool(processes=3) as pool:  # Adjust the number of processes as needed
-        # Use pool.map to process folders in parallel
-        pool.map(process_folder, base_directory.iterdir())
