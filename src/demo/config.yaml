@@ -1,0 +1,7 @@
+demo:
+  frame_buffer_size: 100
+  text_rel_pos_x: 0.5
+  text_rel_pos_y: 0.9
+  max_line_len: 30    # Break lines longer than ``max_line_len``. null to disable.
+
+# TODO: lip model api

@@ -1,6 +1,9 @@
 from typing import Optional, Union, Tuple, List
+from pathlib import Path
 import argparse
+import yaml
 import numpy as np
+import textwrap
 import random
 import string
 import cv2
@@ -15,11 +18,17 @@ class Demo:
 
     def __init__(
         self,
-        frame_buffer_size: int = 30,
+        frame_buffer_size: int,
+        text_rel_pos_y: float = 0.8,
+        text_rel_pos_x: float = 0.5,
         window_width: Optional[int] = None,
         window_height: Optional[int] = None,
+        max_line_len: Optional[int] = None,
     ):
         self.frame_buffer_size = frame_buffer_size
+        self.text_rel_pos_y = text_rel_pos_y
+        self.text_rel_pos_x = text_rel_pos_x
+        self.max_line_len = max_line_len
         self.frame_buffer = []
         self.window_width = window_width
         self.window_height = window_height
@@ -27,7 +36,7 @@ class Demo:
     
     def _to_lip_model(self, frames: list):
         # TODO: call lip model
-        text = "".join(random.choice(string.ascii_lowercase) for i in range(random.randint(10,30)))
+        text = "".join(random.choice(string.ascii_lowercase) for i in range(random.randint(30,70)))
         return text
 
     def _process_frame(self, frame: np.array):
@@ -48,13 +57,21 @@ class Demo:
 
         return frame
 
-
     def _insert_text(self, frame: np.ndarray, text: str) -> np.ndarray:
         h,w,_ = frame.shape
-        text_pos = (w//2, int(h*0.8))
-        frame = self._draw_text(frame, text, text_pos, margin=10, center_x=True, background_alpha=0.5)
+        text_pos = (int(self.text_rel_pos_x*w), int(self.text_rel_pos_y*h))
+        if self.max_line_len:
+            text = textwrap.wrap(text, self.max_line_len, break_long_words=True)
+
+        frame = self._draw_text(
+            frame,
+            text,
+            text_pos,
+            margin=10,
+            center_x=True,
+            background_alpha=0.5
+        )
         return frame
-    
 
     def _draw_text(
         self,   
@@ -163,6 +180,11 @@ class Demo:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument(
+        "--config",
+        type=Path,
+        default=Path("config.yaml"),
+    )
+    ap.add_argument(
         "--width",
         help="Window width",
         type=int
@@ -173,8 +195,12 @@ if __name__ == "__main__":
         type=int
     )
     args = ap.parse_args()
+    with open(args.config, "r") as f:
+        config = yaml.safe_load(f)
+    demo_args = config["demo"]
     demo = Demo(
+        **demo_args,
         window_height=args.height,
-        window_width=args.width
+        window_width=args.width,
     )
     demo.start_camera()
