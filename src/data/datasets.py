@@ -9,7 +9,7 @@
 #we have the following structure:
 #- folder containing:
 #   - transcription.txt
-#   - faces.npz
+#   - face_frames.npz
 #   - keypoints.npz
     
 from torch.utils.data import Dataset, DataLoader
@@ -23,23 +23,23 @@ class LipReadingDataset(Dataset):
         self.load_data()
         
     def load_data(self):
-        # Each subdirectory in root_dir contains one set of transcription, faces, and keypoints
+        # Each subdirectory in root_dir contains one set of transcription, face_frames, and keypoints
         for subdir in next(os.walk(self.root_dir))[1]: 
             dir_path = os.path.join(self.root_dir, subdir)
             transcription_path = os.path.join(dir_path, 'transcription.txt')
-            #faces_path = os.path.join(dir_path, 'faces.npz')
+            #face_frames_path = os.path.join(dir_path, 'face_frames.npz')
             #keypoints_path = os.path.join(dir_path, 'keypoints.npz')
             
-            if os.path.exists(transcription_path):# and os.path.exists(faces_path) and os.path.exists(keypoints_path):
+            if os.path.exists(transcription_path):# and os.path.exists(face_frames_path) and os.path.exists(keypoints_path):
                 with open(transcription_path, 'r') as file:
                     transcription = file.read()
                     
-                #faces = np.load(faces_path, allow_pickle=True)['arr_0'] # The npz file contains a list of frames 
+                #face_frames = np.load(face_frames_path, allow_pickle=True)['arr_0'] # The npz file contains a list of frames 
                 #keypoints = np.load(keypoints_path, allow_pickle=True)['arr_0']
                 
                 self.data.append({
                     'transcription': transcription,
-                    #'faces': faces,
+                    #'face_frames': face_frames,
                     'words':  list(transcription.split()), #but this are the words and we need the letters so we will change it to the letters in the next line 
                     'tokens': list(transcription) #this is the list of letters of the transcription but padding is needed
                     #'keypoints': keypoints
@@ -55,7 +55,7 @@ class LipReadingDataset(Dataset):
         print(tokens)
         return {
             'transcription': item['transcription'],
-            #'faces': item['faces'],
+            #'face_frames': item['face_frames'],
             'tokens': tokens,
             "words": item['words']
             #'keypoints': item['keypoints']

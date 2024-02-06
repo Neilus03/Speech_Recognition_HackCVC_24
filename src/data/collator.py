@@ -6,6 +6,8 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torch import nn 
 from torchvision import transforms
+from tokenizers import CharTokenizer
+
 
 
 class LipReadingCollator:
@@ -19,17 +21,17 @@ class LipReadingCollator:
     def collate_fn(self, batch): 
         '''
         This function will take in a batch of data and collate it into a single tensor.
-        The batch is a list of dictionaries, where each dictionary contains the keys 'transcription', 'faces', and 'keypoints'.
+        The batch is a list of dictionaries, where each dictionary contains the keys 'transcription', 'face_frames', and 'keypoints'.
         The collate function should return a dictionary with the same keys, but the values should be a single tensor, each with the 
         proper transformation applied and properly tokenized.
         
-        The key 'transcription' should be tokenized using the tokenizer, the key 'faces' should be transformed using the 
+        The key 'transcription' should be tokenized using the tokenizer, the key 'face_frames' should be transformed using the 
         transforms and then stacked into a single tensor. The key 'keypoints' should be transformed using the transforms and
         then stacked into a single tensor.
         '''
         transcriptions = []  # To store tokenized transcriptions
         text_tokens = []
-        faces = []     # To store transformed face frames
+        face_frames = []     # To store transformed face frames
         keypoints = []       # To store transformed keypoints   
         max_tokens = max([len(sample['transcription']) for sample in batch]) # Get the maximum length of the transcriptions in the batch
         
@@ -38,7 +40,7 @@ class LipReadingCollator:
         for sample in batch:
             
             text_token = sample['tokens']
-            faces = sample['faces']
+            face_frames = sample['face_frames']
             keypoints = sample['keypoints']
             transcription = sample['transcription']
             
@@ -62,10 +64,10 @@ class LipReadingCollator:
             
             # Apply transforms to face frames (if transforms are provided)
             if self.face_transforms:
-                transformed_faces = self.face_transforms(sample['faces'])
+                transformed_face_frames = self.face_transforms(sample['face_frames'])
                     
             else:
-                transformed_faces = sample['faces']
+                transformed_face_frames = sample['face_frames']
              
             #Apply transforms to keypoints (if transforms are provided)   
             if self.keypoints_transforms:
@@ -75,18 +77,18 @@ class LipReadingCollator:
 
             # Append tokenized transcription tensor, transformed face frames, and keypoints to respective lists
             text_tokens.append(text_token)
-            faces.append(transformed_faces)
+            face_frames.append(transformed_face_frames)
             keypoints.append(transformed_keypoints)
 
         # Stack the lists of transcriptions, face frames, and keypoints into tensors
-        #transcriptions = torch.stack(transcriptions)
-        #faces = torch.stack(faces)
-        #keypoints = torch.stack(keypoints)
+        text_tokens = torch.stack(text_tokens)
+        face_frames = torch.stack(face_frames)
+        keypoints = torch.stack(keypoints)
 
         # Create a dictionary with the collated data
         collated_data = {
-            'transcription': transcriptions,
-            'faces': faces,
+            'text_tokens': text_tokens,
+            'face_frames': face_frames,
             'keypoints': keypoints
         }
         
@@ -108,12 +110,14 @@ if __name__ == "__main__":
             self.data = [
                 {
                     'transcription': "hello",
-                    'faces': np.random.rand(10, 3, 64, 64),
+                    'tokens': ['h', 'e', 'l', 'l', 'o'],
+                    'face_frames': np.random.rand(10, 3, 64, 64),
                     'keypoints': np.random.rand(10, 68, 2)
                 },
                 {
                     'transcription': "word",
-                    'faces': np.random.rand(10, 3, 64, 64),
+                    'tokens': ['w', 'o', 'r', 'd'],
+                    'face_frames': np.random.rand(10, 3, 64, 64),
                     'keypoints': np.random.rand(10, 68, 2)
                 }
             ]
