@@ -4,7 +4,9 @@ import cv2
 import face_recognition
 import os
 
-base_dir = "/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces"
+#base_dir = "/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces"
+#base_dir = r"C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces"
+base_dir = '/data3fast/users/group02/videos/tracks'
 
 # Iterar a través de los directorios y archivos
 for root, dirs, files in os.walk(base_dir):
@@ -49,7 +51,8 @@ for root, dirs, files in os.walk(base_dir):
             
             distances_np = np.array(distances)
 
-            npz_file_path = os.path.join(root, 'lip_keypoints.npz')
+            npz_file_path = os.path.join(root, dir, 'lip_keypoints.npz')
+            print("npz_file_path:", npz_file_path)
             np.savez(npz_file_path, face_frames=distances_np)
 
 print("Done!")
