@@ -6,14 +6,12 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torch import nn 
 from torchvision import transforms
-from tokenizers import CharTokenizer
-
-
+from src.learning.text_tokenizer.tokenizers import CharTokenizer
 
 class LipReadingCollator:
-    def __init__(self, face_transforms = None, keypoints_transforms = None, tokenizer = None):
+    def __init__(self, face_transforms = None, lip_keypoints_transforms = None, tokenizer = None):
         self.face_transforms = face_transforms
-        self.keypoints_transforms = keypoints_transforms
+        self.lip_keypoints_transforms = lip_keypoints_transforms
         self.tokenizer = tokenizer
         return 
     
@@ -21,18 +19,18 @@ class LipReadingCollator:
     def collate_fn(self, batch): 
         '''
         This function will take in a batch of data and collate it into a single tensor.
-        The batch is a list of dictionaries, where each dictionary contains the keys 'transcription', 'face_frames', and 'keypoints'.
+        The batch is a list of dictionaries, where each dictionary contains the keys 'transcription', 'face_frames', and 'lip_keypoints'.
         The collate function should return a dictionary with the same keys, but the values should be a single tensor, each with the 
         proper transformation applied and properly tokenized.
         
         The key 'transcription' should be tokenized using the tokenizer, the key 'face_frames' should be transformed using the 
-        transforms and then stacked into a single tensor. The key 'keypoints' should be transformed using the transforms and
+        transforms and then stacked into a single tensor. The key 'lip_keypoints' should be transformed using the transforms and
         then stacked into a single tensor.
         '''
         transcriptions = []  # To store tokenized transcriptions
         text_tokens = []
-        face_frames = []     # To store transformed face frames
-        keypoints = []       # To store transformed keypoints   
+        #face_frames = []     # To store transformed face frames
+        #lip_keypoints = []       # To store transformed lip_keypoints   
         max_tokens = max([len(sample['transcription']) for sample in batch]) # Get the maximum length of the transcriptions in the batch
         
         
@@ -40,8 +38,9 @@ class LipReadingCollator:
         for sample in batch:
             
             text_token = sample['tokens']
-            face_frames = sample['face_frames']
-            keypoints = sample['keypoints']
+            
+            #face_frames = sample['face_frames']
+            #lip_keypoints = sample['lip_keypoints']
             transcription = sample['transcription']
             
                 
@@ -50,6 +49,7 @@ class LipReadingCollator:
                     text_token + [self.tokenizer.padding_token] * (max_tokens - len(text_token))
                 )
             )
+            print(text_tokenized)
             text_tokens.append(text_tokenized)
             
             '''# Tokenize the transcription using the provided tokenizer (if available)
@@ -63,33 +63,32 @@ class LipReadingCollator:
                 #transcription = torch.tensor(transcription)'''
             
             # Apply transforms to face frames (if transforms are provided)
-            if self.face_transforms:
-                transformed_face_frames = self.face_transforms(sample['face_frames'])
+            #if self.face_transforms:
+                #transformed_face_frames = self.face_transforms(sample['face_frames'])
                     
-            else:
-                transformed_face_frames = sample['face_frames']
+            #else:
+                #transformed_face_frames = sample['face_frames']
              
-            #Apply transforms to keypoints (if transforms are provided)   
-            if self.keypoints_transforms:
-                transformed_keypoints = self.keypoints_transforms(sample['keypoints'])
-            else:
-                transformed_keypoints = sample['keypoints']
+            #Apply transforms to lip_keypoints (if transforms are provided)   
+            #if self.lip_keypoints_transforms:
+                #transformed_lip_keypoints = self.lip_keypoints_transforms(sample['lip_keypoints'])
+            #else:
+                #transformed_lip_keypoints = sample['lip_keypoints']
 
-            # Append tokenized transcription tensor, transformed face frames, and keypoints to respective lists
-            text_tokens.append(text_token)
-            face_frames.append(transformed_face_frames)
-            keypoints.append(transformed_keypoints)
+            # Append tokenized transcription tensor, transformed face frames, and lip_keypoints to respective lists
+            #face_frames.append(transformed_face_frames)
+            #lip_keypoints.append(transformed_lip_keypoints)
 
-        # Stack the lists of transcriptions, face frames, and keypoints into tensors
+        # Stack the lists of transcriptions, face frames, and lip_keypoints into tensors
         text_tokens = torch.stack(text_tokens)
-        face_frames = torch.stack(face_frames)
-        keypoints = torch.stack(keypoints)
+        #face_frames = torch.stack(face_frames)
+        #lip_keypoints = torch.stack(lip_keypoints)
 
         # Create a dictionary with the collated data
         collated_data = {
             'text_tokens': text_tokens,
-            'face_frames': face_frames,
-            'keypoints': keypoints
+            #'face_frames': face_frames,
+            #'lip_keypoints': lip_keypoints
         }
         
         return collated_data
@@ -99,7 +98,7 @@ class LipReadingCollator:
         return self.collate_fn(batch)
     
     def __repr__(self): #__repr__ method is used to return a string representation of the object
-        return f"LipReadingCollator(face transforms={self.face_transforms}, keypoints_transforms={self.keypoints_transforms}, tokenizer={self.tokenizer})"
+        return f"LipReadingCollator(face transforms={self.face_transforms}, lip_keypoints_transforms={self.lip_keypoints_transforms}, tokenizer={self.tokenizer})"
         
         
 if __name__ == "__main__":
@@ -111,14 +110,14 @@ if __name__ == "__main__":
                 {
                     'transcription': "hello",
                     'tokens': ['h', 'e', 'l', 'l', 'o'],
-                    'face_frames': np.random.rand(10, 3, 64, 64),
-                    'keypoints': np.random.rand(10, 68, 2)
+                    #'face_frames': np.random.rand(10, 3, 64, 64),
+                    #'lip_keypoints': np.random.rand(10, 68, 2)
                 },
                 {
                     'transcription': "word",
                     'tokens': ['w', 'o', 'r', 'd'],
-                    'face_frames': np.random.rand(10, 3, 64, 64),
-                    'keypoints': np.random.rand(10, 68, 2)
+                    #'face_frames': np.random.rand(10, 3, 64, 64),
+                    #'lip_keypoints': np.random.rand(10, 68, 2)
                 }
             ]
 
@@ -132,7 +131,7 @@ if __name__ == "__main__":
     dataset = MockDataset()
 
     # Create a collator
-    collator = LipReadingCollator()
+    collator = LipReadingCollator(tokenizer=CharTokenizer())
 
     # Create a DataLoader using the collator
     dataloader = DataLoader(dataset, batch_size=2, collate_fn=collator, shuffle=True)
