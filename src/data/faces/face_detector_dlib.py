@@ -6,83 +6,77 @@ import os
 # Inicializar el detector de rostros de dlib
 detector = dlib.get_frontal_face_detector()
 
-# Cargar el video
-video_path = r'C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces\ingles\Homoeopathy in Female Problems by Dr  Meghna Shah_trimmed.mp4'
-cap = cv2.VideoCapture(video_path)
+base_dir = '/data3fast/users/group02/tracks'
 
-# Lista para almacenar los recortes de las caras
-face_frames = []
+# Iterar recursivamente en el directorio base
+for root, dirs, files in os.walk(base_dir):
+    for file in files:
+        # Verificar si el archivo tiene la extensión .mp4
+        if file.endswith('.mp4'):
+            # Construir la ruta completa del archivo
+            video_path = os.path.join(root, file)
 
-max_width = 0
-max_height = 0
+            # Cargar el video
+            cap = cv2.VideoCapture(video_path)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
+            # Verificar si el video se abrió correctamente
+            if not cap.isOpened():
+                print(f"No se pudo abrir el video: {video_path}")
+                continue
 
-    # Convertir el cuadro a escala de grises para mejorar la detección
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # Lista para almacenar los recortes de las caras
+            face_frames = []
 
-    # Detectar rostros en el cuadro
-    faces = detector(gray)
+            max_width = 0
+            max_height = 0
 
-    # Recortar cada rostro detectado
-    for face in faces:
-        x, y = face.left(), face.top()
-        x1, y1 = face.right(), face.bottom()
-        # Asegurarse de que el recorte no salga del cuadro
-        x, y, x1, y1 = max(x, 0), max(y, 0), min(x1, frame.shape[1]), min(y1, frame.shape[0])
-        # Recortar el rostro
-        face_image = frame[y:y1, x:x1]
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
 
-        # Actualizar el tamaño máximo de la imagen
-        max_width = max(max_width, face_image.shape[1])
-        max_height = max(max_height, face_image.shape[0])
+                # Convertir el cuadro a escala de grises para mejorar la detección
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        # Guardar el recorte en la lista
-        face_frames.append(face_image)
+                # Detectar rostros en el cuadro
+                faces = detector(gray)
 
-# Reescalar todas las imágenes al tamaño máximo
-for i in range(len(face_frames)):
-    face_frames[i] = cv2.resize(face_frames[i], (max_width, max_height))
+                # Verificar si se detectaron rostros antes de intentar recortarlos
+                if len(faces) > 0:
+                    # Recortar cada rostro detectado
+                    for face in faces:
+                        x, y = face.left(), face.top()
+                        x1, y1 = face.right(), face.bottom()
+                        # Asegurarse de que el recorte no salga del cuadro
+                        x, y, x1, y1 = max(x, 0), max(y, 0), min(x1, frame.shape[1]), min(y1, frame.shape[0])
+                        # Recortar el rostro
+                        face_image = frame[y:y1, x:x1]
 
-face_frames_np = np.array(face_frames)
+                        # Actualizar el tamaño máximo de la imagen
+                        max_width = max(max_width, face_image.shape[1])
+                        max_height = max(max_height, face_image.shape[0])
 
-print(type(face_frames_np))
+                        # Guardar el recorte en la lista
+                        face_frames.append(face_image)
 
-# Guardar el array en un archivo npz
-np.savez('face_frames.npz', face_frames=face_frames_np)
+            # Verificar si se detectaron rostros
+            if len(face_frames) == 0:
+                print(f"No se detectaron rostros en el video: {video_path}")
+                cap.release()
+                continue
 
-# Opcional: Mostrar el número total de caras recortadas
-print(f"Total de caras recortadas guardadas: {len(face_frames)}")
+            # Reescalar todas las imágenes al tamaño máximo
+            for i in range(len(face_frames)):
+                face_frames[i] = cv2.resize(face_frames[i], (max_width, max_height))
 
-# Guardar las imágenes como archivos individuales
-for i in range(len(face_frames)):
-    cv2.imwrite(os.path.join(f'face_{i+1}.jpg'), face_frames[i])
+            face_frames_np = np.array(face_frames)
 
-# Recuerda liberar el capturador de video
-cap.release()
+            # Guardar el array en un archivo npz en la misma carpeta que el video
+            npz_file_path = os.path.join(root, 'face_frames.npz')
+            np.savez(npz_file_path, face_frames=face_frames_np)
 
+            # Mostrar el número total de caras recortadas guardadas
+            print(f"Total de caras recortadas guardadas en {npz_file_path}: {len(face_frames)}")
 
-# Cargar el archivo npz
-#data = np.load(r'C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces\face_frames.npz')
-
-# Verificar las claves (keys) del archivo npz
-#print("Claves del archivo npz:", data.files)
-
-# Acceder al array que contiene los frames de las caras
-#face_frames_np = data['face_frames']
-
-# Verificar la forma (shape) del array
-#print("Forma del array de frames de las caras:", face_frames_np.shape)
-
-# Verificar el tipo de datos (dtype) del array
-#print("Tipo de datos del array de frames de las caras:", face_frames_np.dtype)
-
-# Visualizar el primer frame (por ejemplo)
-#first_frame = face_frames_np[0]
-
-# Mostrar el primer frame
-#cv2.imwrite(os.path.join(f'test_npz.jpg'), first_frame)
-
+            # Liberar el capturador de video
+            cap.release()
