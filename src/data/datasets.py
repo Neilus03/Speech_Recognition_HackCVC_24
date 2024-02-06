@@ -80,7 +80,7 @@ class LipReadingDataset(Dataset):
         
     def load_data(self):
         # Each subdirectory in root_dir contains one set of transcription, face_frames, and keypoints
-        for subdir in next(os.walk(self.root_dir))[1]:
+        for subdir in next(os.walk(self.root_dir))[1]: 
             dir_path = os.path.join(self.root_dir, subdir)
             transcription_path = os.path.join(dir_path, 'transcription.txt')
             face_frames_path = os.path.join(dir_path, 'face_frames.npz')
@@ -102,17 +102,19 @@ class LipReadingDataset(Dataset):
         return len(self.data)
     
     def __getitem__(self, idx):
-        # Return a dictionary for each item
+        # Return a dictionary for each item in the dataset
         return {
-            'transcription': self.data[idx]['transcription'],
-            'face_frames': self.data[idx]['face_frames'],
-            'keypoints': self.data[idx]['keypoints']
+            'transcription': self.data[idx]['transcription'], # This is the transcription txt
+            'face_frames': self.data[idx]['face_frames'], # This is the face_frames npz	
+            'keypoints': self.data[idx]['keypoints'] # This is the keypoints npz	
         }
 
 # Example of how to use the dataset
 if __name__ == "__main__":
-    dataset = LipReadingDataset("/data3fast/users/group02/videos/tracks/")
-    dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
+    mock_data_folder = "/home/GROUP02/Speech_Recognition_HackCVC_24/src/data/t/"
+    
+    dataset = LipReadingDataset(mock_data_folder)
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
     for data in dataloader:
         print(data['transcription'], data['face_frames'], data['keypoints'])
         break
