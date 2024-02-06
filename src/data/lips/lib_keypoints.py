@@ -4,7 +4,7 @@ import cv2
 import face_recognition
 # from mmpose.apis import MMPoseInferencer
 
-data = np.load("/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces/face_frames.npz")
+data = np.load(r'C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces\face_frames.npz')
 frames = data['face_frames']
 
 # Convert the image to grayscale, as the detector expects a grayscale image
