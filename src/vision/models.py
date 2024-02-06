@@ -89,10 +89,12 @@ class TransformerDecoder(nn.Module):
         }
     
 # Specify the directory where your .npz files are located
-directory_path = '/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces/ingles'
+# directory_path = '/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces/ingles'
 
 # List all the files in the directory
-files = os.listdir(directory_path)
+# files = os.listdir(directory_path)
+
+"""
 
 # Loop through the files and count the number of arrays in each .npz file
 for file_name in files:
@@ -105,8 +107,10 @@ for file_name in files:
 
         print(f'File: {file_name}, Number of Arrays: {num_arrays}')
 
+"""
+
 batch_size = 1
-frame_length = num_arrays
+frame_length = 92
 channels = 3
 h = 224
 w = 224
