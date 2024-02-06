@@ -4,6 +4,7 @@ import numpy as np
 import os
 import face_recognition
 import cv2
+from tqdm import tqdm
 
 base_dir = "/data3fast/users/group02/videos/tracks/"
 # base_dir = "/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces"
@@ -17,7 +18,7 @@ all_videos = get_all_videos(base_dir)
 # Iterar recursivamente en el directorio base
 random.shuffle(all_videos)
 
-for root, file in all_videos:
+for root, file in tqdm(all_videos):
     if file.endswith('.mp4'):
         video_path = os.path.join(root, file)
         cap = cv2.VideoCapture(video_path)
