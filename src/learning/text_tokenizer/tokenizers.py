@@ -20,7 +20,7 @@ class CharTokenizer:
     ctc_blank = '<BLANK>'
 
     special_tokens = [bos, eos, unk, cls_token, padding_token, ctc_blank]
-    def __init__(self, dataset = None, include_secial=False, local_path = 'tmp_/tokenizers/', tokenizer_name = 'tokenizer', save_on_init = True) -> None:
+    def __init__(self, dataset = None, include_special=False, local_path = 'tmp_/tokenizers/', tokenizer_name = 'tokenizer', save_on_init = True) -> None:
 
         os.makedirs(local_path, exist_ok=True)
         self.full_path = os.path.join(local_path, tokenizer_name + '.json')
@@ -36,7 +36,7 @@ class CharTokenizer:
             self.init_tokens(dataset, save_on_init)
 
         self.decode_array = np.array(list(self.tokens.keys()))
-        self.include_special = include_secial
+        self.include_special = include_special
 
     def __len__(self):
         return max(self.tokens.values()) + 1
@@ -73,7 +73,7 @@ class CharTokenizer:
         }
 
         for idx in tqdm(range(len(dataset)), desc='tokenizing dataset...'):
-
+            print(dataset[idx]['tokens'])
             for char in dataset[idx]['tokens']:
 
                 char = char.lower()
@@ -86,3 +86,4 @@ class CharTokenizer:
             json.dump(
                 self.tokens, open(self.full_path, 'w')
             )
+            

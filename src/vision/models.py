@@ -5,15 +5,14 @@ import os
 import numpy as np
 
 class EncoderCNNLSTM(nn.Module):
-    def __init__(self, encoder, lstm, input_size, hidden_size, num_layers):
+    def __init__(self,  input_size, hidden_size, num_layers, char_num):
         super(EncoderCNNLSTM, self).__init__()
 
         # ResNet a pre-trained CNN model as an encoder
-        self.ResNet = encoder
-        self.lstm = lstm
 
         self.projection = torch.nn.Linear(input_size, hidden_size)
         self.lstm = torch.nn.LSTM(hidden_size, hidden_size, num_layers)
+        self.last_projection = torch.nn.Linear(hidden_size, char_num)
 
     def forward(self, X):
         '''
