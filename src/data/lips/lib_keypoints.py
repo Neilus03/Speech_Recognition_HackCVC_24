@@ -3,7 +3,10 @@ import dlib
 import cv2
 import face_recognition
 
+
 data = np.load("/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces/arabe/face_frames.npz")
+
+data = np.load(r'C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces\face_frames.npz')
 
 frames = data['face_frames']
 
