@@ -30,6 +30,9 @@ class EncoderCNNLSTM(nn.Module):
         cnn_output = self.ResNet(X)
         print(cnn_output.size())
 
+        # Apply the linear projection to match input size
+        cnn_output = self.projection(cnn_output)
+
         # Reshape CNN output to [batch_size, num_frames, features]
         cnn_output = cnn_output.view(batch_size, num_frames, -1)
         print(cnn_output.size())
