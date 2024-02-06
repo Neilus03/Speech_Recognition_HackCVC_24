@@ -116,12 +116,12 @@ h = 224
 w = 224
 
 # Create a random batch of data
-X = torch.rand(batch_size, frame_length, channels, h, w).cuda()
+X = torch.rand(batch_size, frame_length, channels, h, w).cuda(6)
 
 # Create an instance of the EncoderCNNLSTM
 encoder = EncoderCNNLSTM(
-    encoder=models.resnet50(pretrained=True).cuda(),
-    lstm=torch.nn.LSTM(2048, 512, 2).cuda(),
+    encoder=models.resnet50(pretrained=True).cuda(6),
+    lstm=torch.nn.LSTM(2048, 512, 2).cuda(6),
     input_size=2048,
     hidden_size=512,
     num_layers=2
