@@ -11,7 +11,7 @@ def process_file(npz_file_path):
     global started_processes  # Use the global variable
     if os.path.exists(npz_file_path):
         data = np.load(npz_file_path)
-        frames = data['face_frames']
+        frames = data[0]
 
         # Find face landmarks
         face_landmarks_list = face_recognition.face_landmarks(frames[2])
@@ -46,7 +46,7 @@ def main():
 
     for root, dirs, files in os.walk(base_dir):
         for dir in dirs:
-            npz_file_path = os.path.join(root, dir, 'face_frames.npz')
+            npz_file_path = os.path.join(root, dir, 'faces.npz')
             npz_paths.append(npz_file_path)
 
     # Utilize multiprocessing to process the files
