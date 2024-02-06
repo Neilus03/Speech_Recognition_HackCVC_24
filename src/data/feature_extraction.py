@@ -43,11 +43,9 @@ for root, file in tqdm(all_videos):
             if not ret:
                 break
 
-            frames.append(frame)
+            frames.append(frame) # hello
 
             face_landmarks_list = face_recognition.face_landmarks(frame)
-
-            print("")
 
             if face_landmarks_list:
 
