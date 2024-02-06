@@ -11,7 +11,7 @@ def process_file(npz_file_path):
     global started_processes  # Use the global variable
     if os.path.exists(npz_file_path):
         data = np.load(npz_file_path)
-        frames = data[0]
+        frames = data['face_frames']
 
         # Find face landmarks
         face_landmarks_list = face_recognition.face_landmarks(frames[2])
