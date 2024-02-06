@@ -70,10 +70,12 @@ for root, dirs, files in os.walk(base_dir):
             print("type(distances_np):", type(distances_np))
 
             npz_file_path = os.path.join(root, 'face_frames.npz')
-            path = np.savez(npz_file_path, face_frames=distances_np)
-            print("path:", type(path))
+            np.savez(npz_file_path, face_frames=distances_np)
+            # print("path:", type(path))
 
             print('distances:', type(distances))
+
+            break
 
             #print(distances)
 

@@ -6,7 +6,7 @@ import os
 # Inicializar el detector de rostros de dlib
 detector = dlib.get_frontal_face_detector()
 
-base_dir = r'C:\Users\User\Desktop\HACKATON\Speech_Recognition_HackCVC_24\src\data\faces\ingles'
+base_dir = '/data3fast/users/group02/videos/tracks'
 
 # Iterar recursivamente en el directorio base
 for root, dirs, files in os.walk(base_dir):
@@ -67,3 +67,4 @@ for root, dirs, files in os.walk(base_dir):
 
             print(f"Total de caras recortadas guardadas en {npz_file_path}: {len(resized_face_frames)}")
             cap.release()
+
