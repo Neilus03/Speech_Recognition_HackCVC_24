@@ -25,68 +25,76 @@ random.shuffle(all_videos)
 
 for root, file in tqdm(all_videos):
     if file.endswith('.mp4'):
-        video_path = os.path.join(root, file)
-        cap = cv2.VideoCapture(video_path)
 
-        if not cap.isOpened():
-            print(f"Cannot be open: {video_path}")
-            continue
+        try:
 
-        frames = []
-        max_width = 0
-        max_height = 0
+            video_path = os.path.join(root, file)
+            cap = cv2.VideoCapture(video_path)
 
-        while cap.isOpened():
-            
-            ret, frame = cap.read()
+            if not cap.isOpened():
+                print(f"Cannot be open: {video_path}")
+                continue
 
-            if not ret:
-                break
+            frames = []
+            max_width = 0
+            max_height = 0
 
-            frames.append(frame) # hello
+            while cap.isOpened():
+                
+                ret, frame = cap.read()
 
-            face_landmarks_list = face_recognition.face_landmarks(frame)
+                if not ret:
+                    break
 
-            if face_landmarks_list:
+                frames.append(frame) # hello
 
-                # Extract lip keypoints (outer and inner)
-                lip_points_outer = face_landmarks_list[0]['top_lip'] + face_landmarks_list[0]['bottom_lip']
-                lip_points_inner = face_landmarks_list[0]['top_lip'] + face_landmarks_list[0]['bottom_lip']
+                face_landmarks_list = face_recognition.face_landmarks(frame)
 
-                keypoints = lip_points_outer + lip_points_inner
-     
-                # Get the centroid of the lip
-                centroid = (int(np.mean([point[0] for point in keypoints])),
-                            int(np.mean([point[1] for point in keypoints])))
+                if face_landmarks_list:
 
-                # Calculate distances from all keypoints to the centroid
-                distances = [np.sqrt((point[0] - centroid[0])**2 + (point[1] - centroid[1])**2) for point in keypoints]
+                    # Extract lip keypoints (outer and inner)
+                    lip_points_outer = face_landmarks_list[0]['top_lip'] + face_landmarks_list[0]['bottom_lip']
+                    lip_points_inner = face_landmarks_list[0]['top_lip'] + face_landmarks_list[0]['bottom_lip']
 
-                max_dist = distances[47]
+                    keypoints = lip_points_outer + lip_points_inner
+        
+                    # Get the centroid of the lip
+                    centroid = (int(np.mean([point[0] for point in keypoints])),
+                                int(np.mean([point[1] for point in keypoints])))
 
-                distances_norm = [dis/max_dist for dis in distances]
+                    # Calculate distances from all keypoints to the centroid
+                    distances = [np.sqrt((point[0] - centroid[0])**2 + (point[1] - centroid[1])**2) for point in keypoints]
 
-        if not frames:
+                    max_dist = distances[47]
 
-            print(f"Not video: {video_path}")
+                    distances_norm = [dis/max_dist for dis in distances]
+
+            if not frames:
+
+                print(f"Not video: {video_path}")
+                cap.release()
+                continue
+
+            # Convertir a array de NumPy y guardar en archivo .npz
+            keypoints_np = np.array(keypoints).reshape(2 * 48)
+            distances_np = np.array(distances_norm).reshape(48)
+
+            print(f"Size of the array: {keypoints_np.shape}")
+            print(f"Size of the array: {distances_np.shape}")
+
+            # hstack = horizontal stack 
+            features_np = np.hstack((keypoints_np, distances_np))
+
+            # Check the size of the array
+            print(f"Size of the array: {features_np.shape}")
+
+            npz_file_path = os.path.join(root, 'features.npz')
+            np.savez(npz_file_path, face_frames=features_np)
+
             cap.release()
+
+        except Exception as e:
+
+            print(f"Error: {e}")
             continue
-
-        # Convertir a array de NumPy y guardar en archivo .npz
-        keypoints_np = np.array(keypoints).reshape(2 * 48)
-        distances_np = np.array(distances_norm).reshape(48)
-
-        print(f"Size of the array: {keypoints_np.shape}")
-        print(f"Size of the array: {distances_np.shape}")
-
-        # hstack = horizontal stack 
-        features_np = np.hstack((keypoints_np, distances_np))
-
-        # Check the size of the array
-        print(f"Size of the array: {features_np.shape}")
-
-        npz_file_path = os.path.join(root, 'features.npz')
-        np.savez(npz_file_path, face_frames=features_np)
-
-        cap.release()
         
