@@ -76,7 +76,7 @@ for root, file in tqdm(all_videos):
                     # hstack = horizontal stack 
                     features_np = np.hstack((keypoints_np, distances_np))
 
-                    npz_file_path = os.path.join(root, 'features.npz')
+                    npz_file_path = os.path.join(root, 'features_ok.npz')
                     np.savez(npz_file_path, face_frames=features_np)
 
             if not frames:
