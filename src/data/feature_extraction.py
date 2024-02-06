@@ -79,14 +79,8 @@ for root, file in tqdm(all_videos):
             keypoints_np = np.array(keypoints).reshape(2 * 48)
             distances_np = np.array(distances_norm).reshape(48)
 
-            print(f"Size of the array: {keypoints_np.shape}")
-            print(f"Size of the array: {distances_np.shape}")
-
             # hstack = horizontal stack 
             features_np = np.hstack((keypoints_np, distances_np))
-
-            # Check the size of the array
-            print(f"Size of the array: {features_np.shape}")
 
             npz_file_path = os.path.join(root, 'features.npz')
             np.savez(npz_file_path, face_frames=features_np)
