@@ -38,7 +38,7 @@ for root, file in tqdm(all_videos):
             frames = []
             max_width = 0
             max_height = 0
-
+            kps = []
             while cap.isOpened():
                 
                 ret, frame = cap.read()
@@ -75,9 +75,10 @@ for root, file in tqdm(all_videos):
 
                     # hstack = horizontal stack 
                     features_np = np.hstack((keypoints_np, distances_np))
+                    kps.append(features_np)
 
-                    npz_file_path = os.path.join(root, 'features_ok.npz')
-                    np.savez(npz_file_path, face_frames=features_np)
+            npz_file_path = os.path.join(root, 'features_ok_final.npz')
+            np.savez(np.stack(features_np), face_frames=features_np)
 
             if not frames:
 
