@@ -4,7 +4,11 @@ import face_recognition
 import os
 from multiprocessing import Pool
 
+# Global variable to keep track of the number of started processes
+started_processes = 0
+
 def process_file(npz_file_path):
+    global started_processes  # Use the global variable
     if os.path.exists(npz_file_path):
         data = np.load(npz_file_path)
         frames = data['face_frames']
@@ -33,6 +37,9 @@ def process_file(npz_file_path):
 
             print(f"Processed: {output_npz_file_path}")
 
+            # Increment the count of started processes
+            started_processes += 1
+
 def main():
     base_dir = '/data3fast/users/group02/videos/tracks'
     npz_paths = []
@@ -42,13 +49,15 @@ def main():
             npz_file_path = os.path.join(root, dir, 'face_frames.npz')
             npz_paths.append(npz_file_path)
 
-    # Utilizar multiprocessing para procesar los archivos
-    pool = Pool(processes=os.cpu_count())  # Crea un pool de trabajadores igual al número de CPUs
+    # Utilize multiprocessing to process the files
+    num_processes = os.cpu_count()
+    pool = Pool(processes=num_processes)  # Create a pool of workers equal to the number of CPUs
     pool.map(process_file, npz_paths)
 
     pool.close()
     pool.join()
 
+    print(f"Number of processes started: {started_processes}")
     print("Done!")
 
 if __name__ == "__main__":
