@@ -48,7 +48,7 @@ if __name__ == '__main__':
     # Create a mock image array (e.g., 768x768 pixels)
     #make the mock image a random image
     mock_image_array = np.random.rand(768, 768, 3)*255
-
+    # fuiste  tu puto mierda
     # Create a graph with 48 nodes and mock coordinates
     G_example = nx.Graph()
     for i in range(48):
