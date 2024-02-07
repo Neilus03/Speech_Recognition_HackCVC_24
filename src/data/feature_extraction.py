@@ -10,7 +10,7 @@ base_dir = "/data3fast/users/group02/videos/tracks/"
 # base_dir = "/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces"
 
 def get_all_videos(base_path):
-    return sum([[(root, file) for file in files if file.endswith('.mp4')]
+    return sum([[(root, file) for file in files if file.endswith('_trimmed.mp4')]
             for root, dirs, files in os.walk(base_path)], start = []
             )
 
@@ -76,9 +76,9 @@ for root, file in tqdm(all_videos):
                     # hstack = horizontal stack 
                     features_np = np.hstack((keypoints_np, distances_np))
                     kps.append(features_np)
-
-            npz_file_path = os.path.join(root, 'features_ok_final.npz')
-            np.savez(np.stack(features_np), face_frames=features_np)
+                    # print(len(kps))
+            npz_file_path = os.path.join(root, 'features_ok_finals_seqs.npz')
+            np.savez(npz_file_path, face_frames=np.stack(kps))
 
             if not frames:
 
