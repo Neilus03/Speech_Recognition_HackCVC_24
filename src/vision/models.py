@@ -4,15 +4,29 @@ import torchvision.models as models
 import os
 import numpy as np
 
+
+
+def linear_constructor(topology: list):
+    seq = []
+    for n, size in enumerate(topology[:-1]):
+        seq.extend([
+            nn.ReLU(),
+            nn.Linear(size, topology[n + 1])
+        ])
+
+    return seq
+
+
 class EncoderCNNLSTM(nn.Module):
-    def __init__(self,  input_size, hidden_size, num_layers, char_num):
+    def __init__(self,  input_size, hidden_size, num_layers, char_num, projection_topology = [128, 128], device = 'cuda'):
         super(EncoderCNNLSTM, self).__init__()
 
-        # ResNet a pre-trained CNN model as an encoder
-
-        self.projection = torch.nn.Linear(input_size, hidden_size)
+        self.projection = torch.nn.Sequential(*linear_constructor([input_size] + projection_topology + [hidden_size]))
         self.lstm = torch.nn.LSTM(hidden_size, hidden_size, num_layers)
         self.last_projection = torch.nn.Linear(hidden_size, char_num)
+        self.device = device
+
+        self.to(self.device)
 
     def forward(self, X):
         '''
@@ -20,24 +34,13 @@ class EncoderCNNLSTM(nn.Module):
            Input tensor of shape [batch_size, num_frames, channels, height, width]
         :return: Dict
         '''
-        batch_size, num_frames, channels, height, width = X.size()
 
-        # Reshape the input to [batch_size*num_frames, channels, height, width]
-        X = X.view(batch_size * num_frames, channels, height, width)
+        keypoints = X['lip_keypoints'].to(self.device)
+        batch, seq, _ = keypoints.shape
 
-        # Pass the batch through the CNN encoder
-        cnn_output = self.ResNet(X)
-        print(cnn_output.size())
+        projected = self.projection(keypoints.view(batch*seq, -1)).reshape(batch, seq, -1)
 
-        # Apply the linear projection to match input size
-        cnn_output = self.projection(cnn_output)
-
-        # Reshape CNN output to [batch_size, num_frames, features]
-        cnn_output = cnn_output.view(batch_size, num_frames, -1)
-        print(cnn_output.size())
-
-        # Pass the CNN output through the LSTM
-        lstm_output, (h_n, c_n) = self.lstm(cnn_output)
+        lstm_output, (h_n, c_n) = self.lstm(projected.transpose(1,0))
 
         return {
             'features': lstm_output,
@@ -58,6 +61,7 @@ class TransformerDecoder(nn.Module):
         self.decoder = nn.TransformerDecoder(self.layer, num_layers=decoder_depth)
 
         self.lm_head = torch.nn.Linear(decoder_token_size, vocab_size)
+        self.to(encoder.device)
 
     def forward(self, X):
 
@@ -91,47 +95,3 @@ class TransformerDecoder(nn.Module):
             'language_head_output': output,
             'hidden_states': None
         }
-    
-# Specify the directory where your .npz files are located
-# directory_path = '/home/adriangar8/Documents/academia/CVC/hack_repo/src/data/faces/ingles'
-
-# List all the files in the directory
-# files = os.listdir(directory_path)
-
-"""
-
-# Loop through the files and count the number of arrays in each .npz file
-for file_name in files:
-    if file_name.endswith('.npz'):
-
-        file_path = os.path.join(directory_path, file_name)
-
-        arrays = np.load(file_path)
-        num_arrays = len(arrays["face_frames"])
-
-        print(f'File: {file_name}, Number of Arrays: {num_arrays}')
-
-"""
-
-batch_size = 1
-frame_length = 92
-channels = 3
-h = 224
-w = 224
-
-# Create a random batch of data
-X = torch.rand(batch_size, frame_length, channels, h, w).cuda(6)
-
-# Create an instance of the EncoderCNNLSTM
-encoder = EncoderCNNLSTM(
-    encoder=models.resnet50(pretrained=True).cuda(6),
-    lstm=torch.nn.LSTM(2048, 512, 2).cuda(6),
-    input_size=2048,
-    hidden_size=512,
-    num_layers=2
-)
-
-# Pass the batch through the encoder
-encoder_output = encoder(X)
-
-print(f'Encoder Output: {encoder_output}')

@@ -27,22 +27,18 @@ class LipReadingDataset(Dataset):
         for subdir in next(os.walk(self.root_dir))[1]: 
             dir_path = os.path.join(self.root_dir, subdir)
             transcription_path = os.path.join(dir_path, 'transcription.txt')
-            #face_frames_path = os.path.join(dir_path, 'face_frames.npz')
-            #lip_keypoints_path = os.path.join(dir_path, 'lip_keypoints.npz')
+            lip_keypoints_path = os.path.join(dir_path, 'features_ok_finals_seqs.npz')
             
-            if os.path.exists(transcription_path): #and os.path.exists(lip_keypoints_path):
+            if os.path.exists(transcription_path) and os.path.exists(lip_keypoints_path):
                 with open(transcription_path, 'r') as file:
                     transcription = file.read()
-                    
-                #face_frames = np.load(face_frames_path, allow_pickle=True)['arr_0'] # The npz file contains a list of frames 
-                #lip_keypoints = np.load(lip_keypoints_path, allow_pickle=True)
-                
+
+                lip_keypoints = np.load(lip_keypoints_path, allow_pickle=True)['face_frames']
                 self.data.append({
                     'transcription': transcription,
-                    #'face_frames': face_frames,
-                    'words':  list(transcription.split()), #but this are the words and we need the letters so we will change it to the letters in the next line 
+                    'words':  list(transcription.split()), #but this are the words and we need the letters so we will change it to the letters in the next line
                     'tokens': list(transcription), #this is the list of letters of the transcription but padding is needed
-                    #'lip_keypoints': lip_keypoints
+                    'lip_keypoints': lip_keypoints
                 })
                 
     def __len__(self):
@@ -52,12 +48,11 @@ class LipReadingDataset(Dataset):
         # Return a dictionary for each item in the dataset
         item = self.data[idx]
         tokens = item['tokens']
-        print(tokens)
+
         return {
             'transcription': item['transcription'],
-            #'face_frames': item['face_frames'],
             'tokens': tokens,
-            #'lip_keypoints': item['lip_keypoints']
+            'lip_keypoints': item['lip_keypoints']
         }
 
 

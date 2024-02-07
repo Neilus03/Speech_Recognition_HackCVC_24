@@ -8,6 +8,8 @@ from torch import nn
 from torchvision import transforms
 from src.learning.text_tokenizer.tokenizers import CharTokenizer
 
+KEYPOINTS_SIZE = 144
+
 class LipReadingCollator:
     def __init__(self, face_transforms = None, lip_keypoints_transforms = None, tokenizer = None):
         self.face_transforms = face_transforms
@@ -29,66 +31,39 @@ class LipReadingCollator:
         '''
         transcriptions = []  # To store tokenized transcriptions
         text_tokens = []
-        #face_frames = []     # To store transformed face frames
-        #lip_keypoints = []       # To store transformed lip_keypoints   
+        keypoints = np.zeros((len(batch), max([sample['lip_keypoints'].shape[0] for sample in batch]), KEYPOINTS_SIZE)) - 1
+
+        lip_keypoints = []       # To store transformed lip_keypoints
         max_tokens = max([len(sample['transcription']) for sample in batch]) # Get the maximum length of the transcriptions in the batch
-        
-        
+        in_num_frames = []
         # Iterate through each sample in the batch
-        for sample in batch:
-            
+        for idx, sample in enumerate(batch):
+
+
+            in_num_frames.append(sample['lip_keypoints'].shape[0])
+            keypoints[idx, :sample['lip_keypoints'].shape[0], :] = sample['lip_keypoints']
             text_token = sample['tokens']
             
-            #face_frames = sample['face_frames']
-            #lip_keypoints = sample['lip_keypoints']
-            transcription = sample['transcription']
-            
-                
+            lip_keypoints.append(sample['lip_keypoints'])
+            transcriptions.append(sample['transcription'])
             text_tokenized = torch.from_numpy(
                 self.tokenizer(
                     text_token + [self.tokenizer.padding_token] * (max_tokens - len(text_token))
                 )
             )
-            print(text_tokenized)
-            text_tokens.append(text_tokenized)
-            
-            '''# Tokenize the transcription using the provided tokenizer (if available)
-            if self.tokenizer:
-                transcription = self.tokenizer(sample['transcription'])
-                max_len = max(max_len, len(transcription))
-                transcription = transcription + ['<PAD>'] * (max_len - len(transcription))
-                print(transcription)
-            else:
-                transcription = sample['transcription']
-                #transcription = torch.tensor(transcription)'''
-            
-            # Apply transforms to face frames (if transforms are provided)
-            #if self.face_transforms:
-                #transformed_face_frames = self.face_transforms(sample['face_frames'])
-                    
-            #else:
-                #transformed_face_frames = sample['face_frames']
-             
-            #Apply transforms to lip_keypoints (if transforms are provided)   
-            #if self.lip_keypoints_transforms:
-                #transformed_lip_keypoints = self.lip_keypoints_transforms(sample['lip_keypoints'])
-            #else:
-                #transformed_lip_keypoints = sample['lip_keypoints']
 
-            # Append tokenized transcription tensor, transformed face frames, and lip_keypoints to respective lists
-            #face_frames.append(transformed_face_frames)
-            #lip_keypoints.append(transformed_lip_keypoints)
+            text_tokens.append(text_tokenized)
+
 
         # Stack the lists of transcriptions, face frames, and lip_keypoints into tensors
         text_tokens = torch.stack(text_tokens)
-        #face_frames = torch.stack(face_frames)
-        #lip_keypoints = torch.stack(lip_keypoints)
-
         # Create a dictionary with the collated data
         collated_data = {
-            'text_tokens': text_tokens,
-            #'face_frames': face_frames,
-            #'lip_keypoints': lip_keypoints
+            'labels':text_tokens,
+            'lip_keypoints': torch.from_numpy(keypoints).float(),
+            'transcriptions': transcriptions,
+            'output_lengths': [len(x) for x in transcriptions], # Number of frames,
+            'input_lengths': in_num_frames
         }
         
         return collated_data
